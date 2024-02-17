@@ -1412,7 +1412,7 @@ router.post("/SaveRahatokarshDonation", (req, res, next) => {
             doc.end();
             const replacements = {
                 name: req.body.donnerName,
-                link: 'http://localhost:9000/certificate/' + cert_name + '.pdf'
+                link: 'http://localhost:9200/certificate/' + cert_name + '.pdf'
             };
             // mail('donation.html', replacements, req.body.email, "Thank You For Contributing.", " ")
             mail('certification.html', replacements, req.body.email, "Thank You For Donating.", " ")

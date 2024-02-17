@@ -22,7 +22,7 @@ assert(PORT, "PORT is required");
 assert(HOST, "HOST is required"); 
 
 module.exports={
-    port: 9000,
+    port: 9200,
     host: HOST,
     url: HOST_URL,
     sql:{
