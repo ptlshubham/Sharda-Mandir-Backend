@@ -50,7 +50,7 @@ router.get("/GetInstituteDetailByURL/:id", (req, res, next) => {
     })
 });
 
-router.get("/GetLastUpdateSiteById/:id", (req, res, next) => {
+router.get("/GetLastUpdateSiteById/:id", midway.checkToken, (req, res, next) => {
     db.executeSql("SELECT * FROM institute WHERE id='" + req.params.id + "';", function (data, err) {
         if (err) {
             console.log(err);
@@ -59,7 +59,7 @@ router.get("/GetLastUpdateSiteById/:id", (req, res, next) => {
         }
     })
 });
-router.post("/SaveInsituteDetails", (req, res, next) => {
+router.post("/SaveInsituteDetails", midway.checkToken, (req, res, next) => {
     console.log(req.body, "hello  im here");
     const body = req.body;
     var salt = '7fa73b47df808d36c5fe328546ddef8b9011b2c6';
@@ -74,7 +74,7 @@ router.post("/SaveInsituteDetails", (req, res, next) => {
         }
     });
 });
-router.post("/UpdateInstituteDetails", (req, res, next) => {
+router.post("/UpdateInstituteDetails", midway.checkToken, (req, res, next) => {
     console.log(req.body, "hello  im here");
     const body = req.body;
     var salt = '7fa73b47df808d36c5fe328546ddef8b9011b2c6';
@@ -89,7 +89,7 @@ router.post("/UpdateInstituteDetails", (req, res, next) => {
         }
     });
 });
-router.get("/RemoveInstituteDetailsById/:id", (req, res, next) => {
+router.get("/RemoveInstituteDetailsById/:id", midway.checkToken, (req, res, next) => {
     db.executeSql("DELETE FROM institute WHERE id='" + req.params.id + "';", function (data, err) {
         if (err) {
             console.log(err);
@@ -98,7 +98,7 @@ router.get("/RemoveInstituteDetailsById/:id", (req, res, next) => {
         }
     })
 });
-router.get("/GetAllInstituteDetails", (req, res, next) => {
+router.get("/GetAllInstituteDetails", midway.checkToken, (req, res, next) => {
     db.executeSql("SELECT * FROM `institute` ORDER BY name ASC;", function (data, err) {
         if (err) {
             console.log(err);
@@ -108,7 +108,7 @@ router.get("/GetAllInstituteDetails", (req, res, next) => {
     })
 });
 
-router.post("/UploadGalleryImages", (req, res, next) => {
+router.post("/UploadGalleryImages", midway.checkToken, (req, res, next) => {
     var imgname = generateUUID();
 
     const storage = multer.diskStorage({
