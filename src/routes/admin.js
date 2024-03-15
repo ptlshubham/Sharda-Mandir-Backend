@@ -98,7 +98,7 @@ router.get("/RemoveInstituteDetailsById/:id", midway.checkToken, (req, res, next
         }
     })
 });
-router.get("/GetAllInstituteDetails", midway.checkToken, (req, res, next) => {
+router.get("/GetAllInstituteDetails", (req, res, next) => {
     db.executeSql("SELECT * FROM `institute` ORDER BY name ASC;", function (data, err) {
         if (err) {
             console.log(err);
