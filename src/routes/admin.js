@@ -2588,6 +2588,207 @@ router.get("/RemovePhotoContestDetailsById/:id", (req, res, next) => {
         return res.json(data);
     })
 });
+router.post("/SaveAdmissionDetails", (req, res, next) => {
+    db.executeSql("INSERT INTO `admission`(`institute_id`, `subject`, `studentname`, `city`, `email`, `contact`, `lastdegree`, `clgname`, `bachelorsubject`, `cgpa`, `createddate`) VALUES ('" + req.body.institute_id + "','" + req.body.subject + "','" + req.body.studentname + "','" + req.body.city + "','" + req.body.email + "'," + req.body.contact + ",'" + req.body.lastdegree + "','" + req.body.clgname + "','" + req.body.bachelorsubject + "','" + req.body.cgpa + "',CURRENT_TIMESTAMP)", function (data, err) {
+        if (err) {
+            res.json("error");
+            console.log(err)
+        } else {
+            return res.json('success');
+        }
+    });
+});
+
+router.get("/GetAdmissionListData/:id", (req, res, next) => {
+    db.executeSql("SELECT * FROM `admission` WHERE institute_id=" + req.params.id + ";", function (data, err) {
+        if (err) {
+            console.log(err);
+        } else {
+            return res.json(data);
+        }
+    })
+});
+
+router.post("/SaveAchievementDetails", (req, res, next) => {
+    db.executeSql("INSERT INTO `achievement`(`institute_id`, `achieTitle`,`achieImage`, `createddate`) VALUES ('" + req.body.institute_id + "','" + req.body.achieTitle + "','" + req.body.achieImage + "',CURRENT_TIMESTAMP)", function (data, err) {
+        if (err) {
+            res.json("error");
+            console.log(err)
+        } else {
+            if (req.body.achieMultiImage.length > 0) {
+                for (let i = 0; i < req.body.achieMultiImage.length; i++) {
+                    db.executeSql("INSERT INTO `achieimage`(`achieId`, `image`) VALUES (" + data.insertId + ",'" + req.body.achieMultiImage[i] + "');", function (data1, err) {
+                        if (err) {
+                            res.json("error");
+                        } else {
+                        }
+                    });
+                }
+            }
+            const values = [req.body.achieDetails]
+            const escapedValues = values.map(mysql.escape);
+            db.executeSql1("UPDATE achievement SET achieDetails=" + escapedValues + " WHERE id= " + data.insertId, escapedValues, function (data1, err) {
+                if (err) {
+                    res.json("error");
+                    console.log(err)
+                } else {
+                    return res.json('success');
+
+                }
+            });
+        }
+    });
+});
+router.post("/UpdateAchieDetails", (req, res, next) => {
+    db.executeSql("UPDATE `achievement` SET `achieTitle`='" + req.body.achieTitle + "',`achieImage`='" + req.body.achieImage + "',`updateddate`=CURRENT_TIMESTAMP WHERE id=" + req.body.id + ";", function (data, err) {
+        if (err) {
+            res.json("error");
+        } else {
+            const values = [req.body.achieDetails]
+            const escapedValues = values.map(mysql.escape);
+            db.executeSql1("UPDATE achievement SET achieDetails=" + escapedValues + " WHERE id= " + req.body.id, escapedValues, function (data1, err) {
+                if (err) {
+                    res.json("error");
+                    console.log(err)
+                } else {
+                }
+            });
+            return res.json('success');
+        }
+    });
+});
+router.post("/DeleteAchieImage", (req, res, next) => {
+
+    fs.unlink('/var/www/html/cesbackend' + req.body.img, function (err) {
+        if (err) {
+            throw err;
+        } else {
+            return res.json('sucess');
+        }
+    });
+})
+router.get("/RemoveAchieDetails/:id", (req, res, next) => {
+    db.executeSql("SELECT * FROM achievement WHERE id=" + req.params.id + ";", function (data, err) {
+        if (err) {
+            console.log("Error in store.js", err);
+        } else {
+            if (data[0].achieImage != 'null' && data[0].achieImage != 'undefined') {
+                fs.unlink('/var/www/html/cesbackend' + data[0].achieImage, function (err) {
+                    if (err) {
+                        if (err) {
+                            db.executeSql("DELETE FROM `achievement` WHERE id=" + req.params.id, function (data, err) {
+                                if (err) {
+                                    console.log(err);
+                                } else {
+                                    return res.json(data);
+                                }
+                            })
+                        }
+                    } else {
+                        db.executeSql("DELETE FROM `achievement` WHERE id=" + req.params.id, function (data, err) {
+                            if (err) {
+                                console.log(err);
+                            } else {
+                                return res.json(data);
+                            }
+                        })
+                    }
+                });
+            }
+            else {
+                db.executeSql("DELETE FROM `achievement` WHERE id=" + req.params.id, function (data, err) {
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        return res.json(data);
+                    }
+                })
+
+            }
+        }
+    });
+});
+router.get("/GetAchieDetailsById/:id", (req, res, next) => {
+    db.executeSql("SELECT * FROM achievement WHERE institute_id=" + req.params.id + " ORDER BY createddate DESC;", function (data, err) {
+        if (err) {
+            console.log(err);
+        } else {
+            return res.json(data);
+        }
+    })
+});
+router.post("/UploadAchieImage", (req, res, next) => {
+    var imgname = generateUUID();
+    const storage = multer.diskStorage({
+        destination: function (req, file, cb) {
+            cb(null, 'images/achie');
+        },
+        filename: function (req, file, cb) {
+
+            cb(null, imgname + path.extname(file.originalname));
+        }
+    });
+    let upload = multer({ storage: storage }).single('file');
+    upload(req, res, function (err) {
+        console.log("path=", config.url + 'images/achie/' + req.file.filename);
+
+        if (req.fileValidationError) {
+            console.log("err1", req.fileValidationError);
+            return res.json("err1", req.fileValidationError);
+        } else if (!req.file) {
+            console.log('Please select an image to upload');
+            return res.json('Please select an image to upload');
+        } else if (err instanceof multer.MulterError) {
+            console.log("err3");
+            return res.json("err3", err);
+        } else if (err) {
+            console.log("err4");
+            return res.json("err4", err);
+        }
+        return res.json('/images/achie/' + req.file.filename);
+    });
+});
+router.post("/UploadAchieMultiImage", midway.checkToken, (req, res, next) => {
+    var imgname = generateUUID();
+    const storage = multer.diskStorage({
+        destination: function (req, file, cb) {
+            cb(null, 'images/achieMulti');
+        },
+        filename: function (req, file, cb) {
+            cb(null, imgname + path.extname(file.originalname));
+        }
+    });
+    let upload = multer({ storage: storage }).single('file');
+    upload(req, res, function (err) {
+        console.log("path=", config.url + 'images/achieMulti/' + req.file.filename);
+
+        if (req.fileValidationError) {
+            console.log("err1", req.fileValidationError);
+            return res.json("err1", req.fileValidationError);
+        } else if (!req.file) {
+            console.log('Please select an image to upload');
+            return res.json('Please select an image to upload');
+        } else if (err instanceof multer.MulterError) {
+            console.log("err3");
+            return res.json("err3", err);
+        } else if (err) {
+            console.log("err4");
+            return res.json("err4", err);
+        }
+        return res.json('/images/achieMulti/' + req.file.filename);
+    });
+});
+router.get("/GetAchieMultiImagesById/:id", (req, res, next) => {
+    console.log(req.params)
+    db.executeSql("SELECT * FROM achieimage WHERE achieId=" + req.params.id + ";", function (data, err) {
+        if (err) {
+            console.log(err);
+        } else {
+            return res.json(data);
+        }
+    })
+});
+
 function generateUUID() {
     var d = new Date().getTime();
     var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx'.replace(/[xy]/g, function (c) {
